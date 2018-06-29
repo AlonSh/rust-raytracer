@@ -13,6 +13,7 @@ pub struct Sphere {
 }
 
 impl Hitable for Sphere {
+    #[inline(never)]
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = &ray.origin - &self.center;
 
@@ -25,13 +26,16 @@ impl Hitable for Sphere {
             return None;
         }
 
-        let time_hit = (-b - discriminant.sqrt()) / (a);
+        let squared_discriminant = discriminant.sqrt();
+
+
+        let time_hit = (-b - squared_discriminant) / (a);
 
         if t_min < time_hit && time_hit < t_max {
             return Some(self.generate_hit_record_at_point(ray, time_hit));
         }
 
-        let time_hit = (-b + discriminant.sqrt()) / (a);
+        let time_hit = (-b + squared_discriminant) / (a);
 
         if t_min < time_hit && time_hit < t_max {
             return Some(self.generate_hit_record_at_point(ray, time_hit));
