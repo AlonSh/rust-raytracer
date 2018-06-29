@@ -26,7 +26,7 @@ fn main() {
     print!("P3\n{} {}\n255\n", NX, NY);
 
     let (camera, world) = benchmark_world_setup();
-    let mut output = [(0, 0, 0); NX * NY];
+    let mut output = vec![(0, 0, 0); NX * NY];
 
     let pbar = ProgressBar::new((NY * NX) as u64);
 
@@ -35,16 +35,18 @@ fn main() {
     ));
 
 
+    let anti_aliasing_random: Vec<(f64, f64)> = (0..anti_aliasing_ray_count).map(|_| { (rand::random::<f64>(), rand::random::<f64>()) }).collect();
 
-//    output.par_iter_mut().enumerate().for_each(|(index, x)| {
-    output.iter_mut().enumerate().for_each(|(index, x)| {
+
+    output.par_iter_mut().enumerate().for_each(|(index, x)| {
+//    output.iter_mut().enumerate().for_each(|(index, x)| {
         let i = index / NX;
         let j = index % NX;
         let mut col = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
 
-        for _ in 0..anti_aliasing_ray_count {
-            let u_random_part: f64 = rand::random::<f64>();
-            let v_random_part: f64 = rand::random::<f64>();
+        for aa_index in 0..anti_aliasing_ray_count {
+            let u_random_part: f64 = anti_aliasing_random[aa_index].0;
+            let v_random_part: f64 = anti_aliasing_random[aa_index].1;
 
             let u = (j as f64 + u_random_part) / NX as f64;
             let v = (i as f64 + v_random_part) / NY as f64;
@@ -202,42 +204,42 @@ fn benchmark_world_setup() -> (Camera, HitableList) {
         }
     }
 
+//    spheres.push(Sphere {
+//        center: Vec3 { x: 0.0, y: 1.0, z: 0.0 },
+//        radius: 1.0,
+//        material: Material::Dielectric(1.5),
+//    });
+//
+//    spheres.push(Sphere {
+//        center: Vec3 { x: -4.0, y: 1.0, z: 0.0 },
+//        radius: 1.0,
+//        material: Material::Lambertian(Vec3 {
+//            x: 0.4,
+//            y: 0.2,
+//            z: 0.1,
+//        }),
+//    });
+//
+//
+//    spheres.push(Sphere {
+//        center: Vec3 { x: 4.0, y: 1.0, z: 0.0 },
+//        radius: 1.0,
+//        material: Material::Metal(Vec3 {
+//            x: 0.8,
+//            y: 0.8,
+//            z: 0.85,
+//        }, 0.0),
+//    });
+
     spheres.push(Sphere {
         center: Vec3 { x: 0.0, y: 1.0, z: 0.0 },
-        radius: 1.0,
-        material: Material::Dielectric(1.5),
-    });
-
-    spheres.push(Sphere {
-        center: Vec3 { x: -4.0, y: 1.0, z: 0.0 },
-        radius: 1.0,
-        material: Material::Lambertian(Vec3 {
-            x: 0.4,
-            y: 0.2,
-            z: 0.1,
-        }),
-    });
-
-
-    spheres.push(Sphere {
-        center: Vec3 { x: 4.0, y: 1.0, z: 0.0 },
-        radius: 1.0,
+        radius: 2.0,
         material: Material::Metal(Vec3 {
             x: 0.8,
             y: 0.8,
             z: 0.85,
         }, 0.0),
     });
-
-//    spheres.push(Sphere {
-//        center: Vec3 { x: 0.0, y: 1.0, z: 0.0 },
-//        radius: 2.0,
-//        material: Material::Metal(Vec3 {
-//            x: 0.8,
-//            y: 0.8,
-//            z: 0.85,
-//        }, 0.0),
-//    }));
 
     for sphere in spheres {
         world.hitables.push(Box::new(sphere));
